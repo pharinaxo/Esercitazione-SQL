@@ -7,24 +7,35 @@ DROP TABLE IF EXISTS Dipartimento CASCADE;
 DROP TABLE IF EXISTS Sede CASCADE;
 DROP TABLE IF EXISTS Sede_Dipartimento CASCADE;
 
+CREATE TABLE Corso_Laurea(
+	codice char(6) PRIMARY KEY,
+	nome varchar(50) NOT NULL,
+	descrizione TEXT 
+);
+
 CREATE TABLE Studente(
 	
 	matricola char(6) PRIMARY KEY,
-	corso_laurea varchar(50) NOT NULL,
+	corso_laurea char(6) NOT NULL REFERENCES Corso_Laurea,
 	nome varchar(50) NOT NULL,
 	cognome varchar(50) NOT NULL,
 	data_nascita date CHECK(data_nascita >= '1960-01-01'),
 	codice_fiscale char(16) NOT NULL
 );
 
+CREATE TABLE Dipartimento(
+	codice char(6) PRIMARY KEY,
+	nome varchar(50) NOT NULL
+);
+
 CREATE TABLE Docente(
 
 	matricola char(6) PRIMARY KEY,
-	dipartimento varchar(50) NOT NULL,
+	dipartimento char(6) NOT NULL REFERENCES Dipartimento,
 	nome varchar(50) NOT NULL,
 	cognome varchar(50) NOT NULL,
 	data_nascita date CHECK(data_nascita > '1960-01-01'),
-	codice_fiscale char(16) NOT NULL
+	codice_fiscale char(16) NOT NULL UNIQUE
 );
 
 
@@ -32,7 +43,7 @@ CREATE TABLE Modulo(
 
 	codice char(6) PRIMARY KEY,
 	nome varchar(50) NOT NULL,
-	descrizione clob,
+	descrizione TEXT,
 	cfu int CHECK (cfu >= 6 AND cfu<= 12)
 );
 
@@ -43,7 +54,7 @@ CREATE TABLE Esame(
 	matricola_docente char(6) NOT NULL,
 	data_esame date CHECK (data_esame >= '2021-01-01' AND data_esame <= '2021-12-31'),
 	voto int CHECK(voto >= '18' AND voto <= '30'),
-	note clob,
+	note TEXT,
 	
 	FOREIGN KEY(matricola_studente)
 		REFERENCES Studente(matricola),
@@ -52,17 +63,6 @@ CREATE TABLE Esame(
 	FOREIGN KEY(matricola_docente)
 		REFERENCES Docente(matricola)
 
-);
-
-CREATE TABLE Corso_Laurea(
-	codice char(6) PRIMARY KEY,
-	nome varchar(50) NOT NULL,
-	descrizione clob 
-);
-
-CREATE TABLE Dipartimento(
-	codice char(6) PRIMARY KEY,
-	nome varchar(50) NOT NULL
 );
 
 CREATE TABLE Sede(
@@ -75,14 +75,20 @@ CREATE TABLE Sede_Dipartimento(
 	
 	codice_sede char(6) NOT NULL,
 	codice_dipartimento char(6) NOT NULL,
-	note clob,
-	
+	note TEXT,
+	PRIMARY KEY (codice_sede, codice_dipartimento),
 	FOREIGN KEY (codice_sede)
 		REFERENCES Sede(codice),
 	FOREIGN KEY (codice_dipartimento)
 		REFERENCES Dipartimento (codice)
 );
 
+
+
+INSERT INTO Corso_Laurea(codice,nome,descrizione)
+ VALUES('INFO','Informatica',NULL);
+INSERT INTO Corso_Laurea(codice,nome,descrizione)
+ VALUES('ICD','Informatica e Comunicazione Digitale',NULL);
 
 
 INSERT INTO Studente (matricola,corso_laurea,nome,cognome,data_nascita,codice_fiscale)
@@ -92,20 +98,30 @@ INSERT INTO Studente (matricola,corso_laurea,nome,cognome,data_nascita,codice_fi
 INSERT INTO Studente (matricola,corso_laurea,nome,cognome,data_nascita,codice_fiscale)
 	VALUES ('123456','ICD','Lautaro','Martinez','1999-02-19','ALMNDE1921AADWE6');
 INSERT INTO Studente (matricola,corso_laurea,nome,cognome,data_nascita,codice_fiscale)
-	VALUES ('232121','INFORMATICA','Giovanni','Marchighiano','2001-08-23','ADKWK1923AL43JFG');
+	VALUES ('232121','INFO','Giovanni','Marchighiano','2001-08-23','ADKWK1923AL43JFG');
 INSERT INTO Studente (matricola,corso_laurea,nome,cognome,data_nascita,codice_fiscale)
-	VALUES ('233132','INFORMATICA','Manuel','Piccolo','2001-10-11','MNLPXCC0121KLEW8');
+	VALUES ('233132','INFO','Manuel','Piccolo','2001-10-11','MNLPXCC0121KLEW8');
 	
 	
 
 	
 	
+INSERT INTO Dipartimento(codice,nome)
+	VALUES('INFO','EX FACOLTA DEGLI STUDI DI FISICA');
+INSERT INTO Dipartimento(codice,nome)
+	VALUES('ARG','FACOLTA DI MILANO');
+INSERT INTO Dipartimento(codice,nome)
+	VALUES('BUL','UNIVERSITA DI BARI');
+INSERT INTO Dipartimento(codice,nome)
+	VALUES('ANG','UNIVERSITA VICINO BARI');
+
+
 INSERT INTO Docente (matricola,dipartimento,nome,cognome,data_nascita,codice_fiscale)
-	VALUES('212111','ICD','Carlo','Magno','1984-02-13','MGLCRN0122121176');
+	VALUES('212111','INFO','Carlo','Magno','1984-02-13','MGLCRN0122121176');
 INSERT INTO Docente (matricola,dipartimento,nome,cognome,data_nascita,codice_fiscale)
-	VALUES('321211','ICD','Gennaro','Vessio','1976-05-12','GNVLDS2193GNL031');
+	VALUES('321211','INFO','Gennaro','Vessio','1976-05-12','GNVLDS2193GNL031');
 INSERT INTO Docente (matricola,dipartimento,nome,cognome,data_nascita,codice_fiscale)
-	VALUES('231121','ICD','Genni','Fragnelli','1960-03-19','GNVLDS2193GNL031');
+	VALUES('231121','BUL','Genni','Fragnelli','1960-03-19','GNVLDS2193GNL032');
 
 	
 	
@@ -135,16 +151,6 @@ INSERT INTO Esame(matricola_studente,codice_modulo,matricola_docente,data_esame,
 	VALUES('744009','000003','231121','2021-03-01','18',NULL);
 
 
-INSERT INTO Dipartimento(codice,nome)
-	VALUES('INFO','EX FACOLTA DEGLI STUDI DI FISICA');
-INSERT INTO Dipartimento(codice,nome)
-	VALUES('ARG','FACOLTA DI MILANO');
-INSERT INTO Dipartimento(codice,nome)
-	VALUES('BUL','UNIVERSITA DI BARI');
-INSERT INTO Dipartimento(codice,nome)
-	VALUES('ANG','UNIVERSITA VICINO BARI');
-
-
 INSERT INTO Sede (codice,indirizzo,citta)
 	VALUES('INFO','Ruggiero 3', 'Taranto');
 INSERT INTO Sede(codice,indirizzo,citta)
@@ -155,10 +161,6 @@ INSERT INTO Sede(codice,indirizzo,citta)
 	VALUES('ANG','Carmelo 3','Brindisi');
 	
 	
-INSERT INTO Corso_Laurea(codice,nome,descrizione)
- VALUES('000001','INFORMATICA',NULL);
-	
-
 
 
 /*QUERY1 Mostrare nome e descrizione di tutti i moduli da 9 CFU*/ 
@@ -171,19 +173,20 @@ WHERE cfu = '9'
 
 SELECT matricola,nome,cognome
 FROM Docente
-WHERE data_nascita >= '1962-01-01'
+WHERE data_nascita <= current_timestamp - interval '60 years'
 
 /*QUERY3 Mostrare nome, cognome e nome del dipartimento di ogni docente, ordinati dal più giovane al più anziano.*/ 
 	
-SELECT nome,cognome,dipartimento,
-FROM Docente
+SELECT Docente.nome,cognome,Dipartimento.nome
+FROM Docente, Dipartimento
+WHERE Docente.dipartimento = Dipartimento.codice
 ORDER BY data_nascita DESC
 
 /*QUERY4 Mostrare città e indirizzo di ogni sede del dipartimento di codice "INFO"*/
 
 SELECT s.citta,s.indirizzo
-FROM Sede s,Dipartimento d
-WHERE s.codice = d.codice AND d.codice='INFO'
+FROM Sede s, Sede_Dipartimento sd
+WHERE s.codice = sd.codice_sede AND sd.codice_dipartimento = 'INFO'
 
 	
 /*QUERY5 Mostrare nome del dipartimento, città e indirizzo di ogni sede di ogni dipartimento,
